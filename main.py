@@ -46,8 +46,34 @@ def createApp():
         data = response.read()
         print(data)
         print "Application Created"
-        config_data['appID'] = data
+        config_data['appID'] = data.replace('\"','')
         updateConfig()
+        conn.close()
+    except Exception as e:
+        print e
+
+#get the application with id
+def getApplication(appID):
+    headers = {
+        #Request headers
+        'Ocp-Apim-Subscription-Key':config_data['subscription_key']
+    }
+
+    params = urllib.urlencode({})
+
+    body_json = json.dumps({})
+
+    try:
+        conn = httplib.HTTPSConnection("api.projectoxford.ai")
+        conn.request("GET","/luis/v1.0/prog/apps/{0}?%{1}" .format(config_data["appID"], params),body_json, headers)
+        response = conn.getresponse()
+        code = response.status
+        if code == 200:
+            data = response.read()
+            return data
+        else:
+            return None
+        conn.close()
     except Exception as e:
         print e
 
@@ -61,4 +87,14 @@ if __name__ == "__main__":
 
     #else check if the app exists
     else:
-        print config_data["appID"]
+        application = getApplication(config_data['appID'])
+        if application:
+            print application
+        else:
+            print "No application with that ID exists"
+            answer = raw_input("Create New Application? (Y/N):")
+            if answer == 'Y' or answer == 'y':
+                createApp()
+            else:
+                print "Cancelled"
+        

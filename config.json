@@ -1,1 +1,7 @@
-{"appID": "\"81b02f5f-1a7b-4ed5-8a98-2dd03ab79836\"", "culture": "en-us", "subscription_key": "9d9bd4413ca941f6ab8f3df47ba06373", "description": "A simple bot to query data about the alumni of MIT Entrepreneurship Bootcamp", "name": "MITBootcampAlumnBot"}
+{
+ "appID": "53eedc91-c045-4e33-8e07-4a564b9b6760", 
+ "culture": "en-us", 
+ "subscription_key": "9d9bd4413ca941f6ab8f3df47ba06373", 
+ "description": "A simple bot to query data about the alumni of MIT Entrepreneurship Bootcamp", 
+ "name": "MITBootcampAlumnBot"
+}
