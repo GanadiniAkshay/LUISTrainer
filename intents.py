@@ -55,6 +55,7 @@ def getNewIntents():
     """
     new_intents = []
     basePath = "./intents/"
+    print "Getting list of new intents..."
     for subdirs, dirs, files in os.walk(basePath):
         for file in files:
             filepath = subdirs + os.sep + file
@@ -88,6 +89,40 @@ def deleteIntent(intentID):
         response = conn.getresponse()
         code = response.status
         if code == 200:
+            return True
+        else:
+            return False
+    except Exception as e:
+        print e
+
+######################################
+### create a new intent classifier ###
+######################################
+def createIntent(intent):
+    """
+        Takes the intent name as parameter
+        Creates a new Intent Classifier with the given Intent Name
+    """
+    headers = {
+        # Request headers
+        'Ocp-Apim-Subscription-Key':config_data['subscription_key']
+    }
+
+    params = urllib.urlencode({})
+
+    body = {}
+    body["Name"] = intent
+
+    body_json = json.dumps(body)
+
+    print "Creating Intent Classifier for " + intent + "..."
+
+    try:
+        conn = httplib.HTTPSConnection('api.projectoxford.ai')
+        conn.request("POST","/luis/v1.0/prog/apps/{0}/intents?%{1}" .format(config_data["appID"], params),body_json, headers)
+        response = conn.getresponse()
+        code = response.status
+        if code == 201:
             return True
         else:
             return False
