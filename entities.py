@@ -11,7 +11,7 @@ config_data = config.getConfig()
 ###############################################
 ### Get list of Entities of the Application ###
 ###############################################
-def getCurrentEntities(appID):
+def getExistingEntities(appID):
     """
         Takes appID as a parameter
         Returns the current Entities on the Application on the server

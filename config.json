@@ -7,5 +7,17 @@
  "entities":[
      {"name":"destination"},
      {"name":"airlines"}
+ ],
+ "phraselists":[
+     {
+         "name":"cities",
+         "mode":"exchangable",
+         "phrases":["Delhi","New Delhi","Hyderabad","Mumbai","Chennai","Bengaluru","Kolkata"]
+     },
+     {
+         "name":"airlines",
+         "mode":"exchangable",
+         "phrases":["Spicejet","Jet Airways","Air India","Indigo"]
+     }
  ]
 }

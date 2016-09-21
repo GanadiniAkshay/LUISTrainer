@@ -11,7 +11,7 @@ config_data = config.getConfig()
 ###########################################################
 ### get the current list of intents for the application ###
 ###########################################################
-def getCurrentIntents(appID):
+def getExistingIntents(appID):
     """
         Takes appID as a parameter
         Returns the current Intents on the Application on the server
