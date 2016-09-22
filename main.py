@@ -39,11 +39,11 @@ if __name__ == "__main__":
 
         #get list of existing intents of the application
         existing_intents = intents.getExistingIntents(config_data['appID'])
-        print "Current Intents: "  + str(existing_intents)
+        #print "Current Intents: "  + str(existing_intents)
 
         #get list of new intents 
         new_intents = intents.getNewIntents()
-        print "New Intents: " + str(new_intents)
+        #print "New Intents: " + str(new_intents)
 
         #get list of intents missing in config 
         missing_intents = set(existing_intents) - set(new_intents)
@@ -71,11 +71,11 @@ if __name__ == "__main__":
 
         #get list of existing entities of the application
         existing_entities = entities.getExistingEntities(config_data['appID'])
-        print "Current Entities: " + str(existing_entities)
+        #print "Current Entities: " + str(existing_entities)
 
         #get list of new entities
         new_entities = entities.getNewEntities()
-        print "New Entities: " + str(new_entities)
+        #print "New Entities: " + str(new_entities)
 
         #get list of entities missing in config 
         missing_entities = set(existing_entities) - set(new_entities)
@@ -103,11 +103,11 @@ if __name__ == "__main__":
 
         #get list of existing phraselists of the application
         existing_phraselists = phraselists.getExistingPhraselists(config_data['appID'])
-        print "Existing Phraselists: " + str(existing_phraselists)
+        #print "Existing Phraselists: " + str(existing_phraselists)
 
         #get list of new phraselists
         new_phraselists = phraselists.getNewPhraselists()
-        print "New Phraselists: " + str(new_phraselists)
+        #print "New Phraselists: " + str(new_phraselists)
 
         #get list of phraselists missing in config 
         missing_phraselists = set(existing_phraselists) - set(new_phraselists)
