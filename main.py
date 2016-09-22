@@ -39,14 +39,16 @@ if __name__ == "__main__":
 
         #get list of existing intents of the application
         existing_intents = intents.getExistingIntents(config_data['appID'])
+        existing_intents_set = set(existing_intents)
         #print "Current Intents: "  + str(existing_intents)
 
         #get list of new intents 
         new_intents = intents.getNewIntents()
+        new_intents_set = set(new_intents)
         #print "New Intents: " + str(new_intents)
 
         #get list of intents missing in config 
-        missing_intents = set(existing_intents) - set(new_intents)
+        missing_intents = existing_intents_set - new_intents_set
         for intent in missing_intents:
             print "Intent " + intent + " is missing in your config but is present on the model."
             answer = raw_input("Delete it? (Y/N):")
@@ -58,7 +60,7 @@ if __name__ == "__main__":
                     print "There was an error"
 
         #get list of intents to be created
-        intents_to_create = set(new_intents) - set(existing_intents)
+        intents_to_create = new_intents_set - existing_intents_set
         for intent in intents_to_create:
             createStatus = intents.createIntent(intent)
             if createStatus:
@@ -71,14 +73,16 @@ if __name__ == "__main__":
 
         #get list of existing entities of the application
         existing_entities = entities.getExistingEntities(config_data['appID'])
+        existing_entities_set = set(existing_entities)
         #print "Current Entities: " + str(existing_entities)
 
         #get list of new entities
         new_entities = entities.getNewEntities()
+        new_entities_set = set(new_entities)
         #print "New Entities: " + str(new_entities)
 
         #get list of entities missing in config 
-        missing_entities = set(existing_entities) - set(new_entities)
+        missing_entities = existing_entities_set - new_entities_set
         for entity in missing_entities:
             print "Entity " + entity + " is missing in the config but is present on the model."
             answer = raw_input("Delete it? (Y/N):")
@@ -90,7 +94,7 @@ if __name__ == "__main__":
                     print "There was an error"
 
         #get list of entities to be created
-        entities_to_create = set(new_entities) - set(existing_entities)
+        entities_to_create = new_entities_set - existing_entities_set
         for entity in entities_to_create:
             createStatus = entities.createEntity(entity)
             if createStatus:
@@ -103,14 +107,16 @@ if __name__ == "__main__":
 
         #get list of existing phraselists of the application
         existing_phraselists = phraselists.getExistingPhraselists(config_data['appID'])
+        existing_phraselists_set = set(existing_phraselists)
         #print "Existing Phraselists: " + str(existing_phraselists)
 
         #get list of new phraselists
         new_phraselists = phraselists.getNewPhraselists()
+        new_phraselists_set = set(new_phraselists)
         #print "New Phraselists: " + str(new_phraselists)
 
         #get list of phraselists missing in config 
-        missing_phraselists = set(existing_phraselists) - set(new_phraselists)
+        missing_phraselists = existing_phraselists_set - new_phraselists_set
         for phraselist in missing_phraselists:
             print "Phraselist " + phraselist + " is missing in the config but is present on the model."
             answer = raw_input("Delete it? (Y/N):")
@@ -122,7 +128,7 @@ if __name__ == "__main__":
                     print "There was an error"
 
         #get list of phraselists to be created
-        phraselists_to_create = set(new_phraselists) - set(existing_phraselists)
+        phraselists_to_create = new_phraselists_set - existing_phraselists_set
         for phraselist in phraselists_to_create:
             createStatus = phraselists.createPhraselist(phraselist,new_phraselists[phraselist]['phrases'],new_phraselists[phraselist]['mode'])
             if createStatus:
@@ -131,7 +137,7 @@ if __name__ == "__main__":
                 print "There was an error"
 
         #get list of phraselists to be updated
-        phraselists_to_update = set(new_phraselists).intersection(set(existing_phraselists))
+        phraselists_to_update = new_phraselists_set.intersection(existing_phraselists_set)
         flag = 0
         print "Checking if updates needed to phraselists..."
         for phraselist in phraselists_to_update:
