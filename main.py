@@ -10,6 +10,7 @@ import config
 import intents
 import entities
 import phraselists
+import utterances
 
 
 if __name__ == "__main__":
@@ -153,6 +154,33 @@ if __name__ == "__main__":
                 flag = 1
         if flag == 0:
             print "No phraselist needs updates"
+
+
+
+        ##### Handle Utterances ####
+
+        #get utterance id of existing utterances
+        utterance_ids = utterances.getUtterances()
+
+        #delete the existing utterances
+        print "Deleting existing utterances..."
+        for id in utterance_ids:
+            deleteStatus = utterances.deleteUtterance(id)
+            if deleteStatus:
+                continue
+            else:
+                print "There was an error"
+        print "Existing utterances deleted..."
+
+        #add new utterances
+        print "Adding new utterances"
+        addStatus = utterances.addUtterances()
+
+        if addStatus:
+            print "Added new utterances"
+        else:
+            print "There was an error"
+
 
 
 
