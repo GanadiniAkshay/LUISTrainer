@@ -9,7 +9,7 @@ Instead you can use this framework which uses the LUIS API to train your models 
 #### Usage
 1. Setup Config
    * Add your subscription_key in config.json (subscription key for LUIS. You can find your's [here] (https://www.luis.ai/Home/UserSettings)
-   * Add your App Name and appID. (LUIS app name and appId)  
+   * Add your App Name, App Description and appID. (LUIS app name and appId)  
      If it's a new app and you don't have an id, put appId as **None**
 
 2. Create Intents
@@ -20,6 +20,11 @@ Instead you can use this framework which uses the LUIS API to train your models 
    * To create a entity add a json object to the array of the entities field in the config.json file
      with the following schema  
      { "name" : _name of entity_}
+   * To add the entity to a training example, put paranthesis around the example and then list   
+     the entity names after the example seperated by '<=>'  
+     eg: "Book a (Delta) flight from (NYC) to (Miami) <=> airlines <=> destination <=> destination"
+         
+        The order of entity names should be in the order in which they occur in the statement.
    
     **Note: Currently it doesn't work for hierarchial or composite entities.**
 
