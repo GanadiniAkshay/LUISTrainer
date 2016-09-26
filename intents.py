@@ -61,6 +61,9 @@ def getNewIntents():
             filepath = subdirs + os.sep + file
             if filepath.endswith(".txt"):
                 intent = filepath.split('/')[-1].split('.')[0]
+                # check for windows based paths
+                if '\\' in intent:
+                    intent = intent.split('\\')[1]
                 new_intents.append(intent)
     return new_intents
 

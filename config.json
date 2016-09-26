@@ -15,3 +15,20 @@
         ]
    */
 }
+
+// {
+//  "culture": "en-us", 
+//  "subscription_key": "9d9bd4413ca941f6ab8f3df47ba06373",
+//  "description": "A sample bot to book flights and to showcase the framework", 
+//  "name": "FlightBooker", 
+//  "appID": "fcea0000-f7fb-4b0a-ad59-379640971347",
+//  "entities":[ {"name":"destination"}],
+//  "phraselists": [   
+//                   {
+//                   "name":"cities",
+//                   "mode":"exchangable",
+//                   "phrases":["Delhi","New Delhi","Hyderabad","Mumbai","Chennai","Bengaluru","Kolkata"]
+//                   }
+//               ]
+  
+// }

@@ -11,7 +11,7 @@ import intents
 import entities
 import phraselists
 import utterances
-
+import train
 
 if __name__ == "__main__":
     config_data = config.getConfig()
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         #get list of new intents 
         new_intents = intents.getNewIntents()
         new_intents_set = set(new_intents)
-        #print "New Intents: " + str(new_intents)
+        # print "New Intents: " + str(new_intents)
 
         #get list of intents missing in config 
         missing_intents = existing_intents_set - new_intents_set
@@ -178,6 +178,14 @@ if __name__ == "__main__":
 
         if addStatus:
             print "Added new utterances"
+        else:
+            print "There was an error"
+
+        #train the system
+        trainStatus = train.train()
+
+        if trainStatus:
+            print "Model Successfully trained"
         else:
             print "There was an error"
 

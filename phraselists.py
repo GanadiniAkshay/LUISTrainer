@@ -8,9 +8,9 @@ import config
 
 config_data = config.getConfig()
 
-###############################################
+##################################################
 ### Get list of Phraselists of the Application ###
-###############################################
+##################################################
 def getExistingPhraselists(appID):
     """
         Takes appID as a parameter
