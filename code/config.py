@@ -19,7 +19,7 @@ def getConfig():
 #############################
 ### update the cofig file ###
 #############################
-def updateConfig():
+def updateConfig(config_data):
     """
         Takes No Parameter
         Updates the config file with the app ID

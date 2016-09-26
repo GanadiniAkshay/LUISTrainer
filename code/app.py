@@ -44,7 +44,7 @@ def createApp():
         print(data)
         print "Application Created"
         config_data['appID'] = data.replace('\"','')
-        config.updateConfig()
+        config.updateConfig(config_data)
         conn.close()
     except Exception as e:
         print e
