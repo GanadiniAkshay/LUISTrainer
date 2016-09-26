@@ -38,7 +38,7 @@ Instead you can use this framework which uses the LUIS API to train your models 
       }
   
 5. Train/Build the LUIS Model
-    * Run main.py ($ python main.py)
+    * CD into code folder and run main.py ($ python main.py)
     
   After following the above steps, you can visit the application portal and you will find your application built and trained.
   
