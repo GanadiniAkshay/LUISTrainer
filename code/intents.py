@@ -54,7 +54,7 @@ def getNewIntents():
         Returns the list of intents in the config
     """
     new_intents = []
-    basePath = "./intents/"
+    basePath = "../intents/"
     print "Getting list of new intents..."
     for subdirs, dirs, files in os.walk(basePath):
         for file in files:

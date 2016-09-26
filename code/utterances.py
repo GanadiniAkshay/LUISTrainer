@@ -100,12 +100,15 @@ def addUtterances():
     
     utterances = []
 
-    basePath = "./intents/"
+    basePath = "../intents/"
     for subdirs, dirs, files in os.walk(basePath):
         for file in files:
             filepath = subdirs + os.sep + file
             if filepath.endswith(".txt"):
                 intent = filepath.split('/')[-1].split('.')[0]
+                # check for windows based paths
+                if '\\' in intent:
+                    intent = intent.split('\\')[1]
                 print "Adding examples for intent " + intent
                 with open(filepath,'r') as intentFile:
                     for example in intentFile:
@@ -162,25 +165,6 @@ def addUtterances():
                         utterance["SelectedIntentName"] = intent
                         utterance["EntityLabels"] = entityLabels
 
-                        # #check for entities
-                        # entityLabels = []
-                        # example_split = example.split(" <=> ")
-                        # if len(example_split) > 1:
-                        #     example_utterance = example_split[0]
-                        #     entityStartLabel = example_utterance.find('(') + 1
-                        #     entityEndLabel   = example_utterance.find(')') - 1
-                        #     example = example_utterance.replace('(','')
-                        #     example = example_utterance.replace(')','')
-                        #     entityLabel = {}
-                        #     entityLabel["EntityType"] = example_split[1]
-                        #     entityLabel["StartToken"] = entityStartLabel
-                        #     entityLabel["EndToken"] = entityEndLabel
-
-                        #     entityLabels.append(entityLabel)
-                        # utterance["ExampleText"] = example
-                        # utterance["SelectedIntentName"] = intent
-                        # utterance["EntityLabels"] = entityLabels
-
                         utterances.append(utterance)
     headers = {
         #Request headers
@@ -191,8 +175,6 @@ def addUtterances():
     params = urllib.urlencode({})
 
     body_json = json.dumps(utterances)
-
-    print body_json
 
     try:
         conn = httplib.HTTPSConnection("api.projectoxford.ai")
