@@ -1,2 +1,0 @@
-do you have flights of (indigo) to (chennai) <=> airlines <=> destination
-when is the next (indigo) flight from (mumbai) to (chennai) <=> airlines <=> destination <=> destination
