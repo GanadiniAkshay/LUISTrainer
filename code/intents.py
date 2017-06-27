@@ -53,18 +53,9 @@ def getNewIntents():
         Takes No Parameters
         Returns the list of intents in the config
     """
-    new_intents = []
     basePath = "../intents/"
     print "Getting list of new intents..."
-    for subdirs, dirs, files in os.walk(basePath):
-        for file in files:
-            filepath = subdirs + os.sep + file
-            if filepath.endswith(".txt"):
-                intent = filepath.split('/')[-1].split('.')[0]
-                # check for windows based paths
-                if '\\' in intent:
-                    intent = intent.split('\\')[1]
-                new_intents.append(intent)
+    new_intents = [os.path.splitext(f)[0] for f in os.listdir(basePath) if os.path.isfile(os.path.join(basePath, f)) and f.endswith(".txt")]
     return new_intents
 
 #######################################
