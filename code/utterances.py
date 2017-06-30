@@ -103,12 +103,9 @@ def addUtterances():
     basePath = "../intents/"
     for subdirs, dirs, files in os.walk(basePath):
         for file in files:
-            filepath = subdirs + os.sep + file
+            filepath = os.path.join(subdirs, file)
             if filepath.endswith(".txt"):
-                intent = filepath.split('/')[-1].split('.')[0]
-                # check for windows based paths
-                if '\\' in intent:
-                    intent = intent.split('\\')[1]
+                intent = os.path.splitext(filepath)[0]
                 print "Adding examples for intent " + intent
                 with open(filepath,'r') as intentFile:
                     for example in intentFile:
