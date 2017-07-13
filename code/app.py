@@ -1,82 +1,51 @@
+import httplib
 import json
-import sys
-import ast
-import os
-import httplib, urllib, base64
-
 
 import config
 
+configData = config.getConfig()
+headers = {"Ocp-Apim-Subscription-Key": configData["subscription_key"]}
 
-config_data = config.getConfig()
 
 ##################################
-####  create new application #####
+####  Create new application #####
 ##################################
 def createApp():
     """
         Takes No Parameters
         Creates a new Application and adds the appID into config.json
     """
-    headers = {
-        # Request headers
-        'Content-Type': 'application/json',
-        'Ocp-Apim-Subscription-Key':config_data["subscription_key"]
-    }
-
-    params = urllib.urlencode({})
-
-    body = {}
-
-    body["Name"] = config_data["name"]
-    body["Description"] = config_data["description"]
-    body["Culture"] = config_data["culture"]
-
-    body_json = json.dumps(body)
-    
+    print "Creating Application"
     try:
-        conn = httplib.HTTPSConnection('api.projectoxford.ai')
-        conn.request("POST","/luis/v1.0/prog/apps?%s" % params, body_json, headers)
-
-        print "Creating Application...."
-        response = conn.getresponse()
-        data = response.read()
-        print(data)
-        print "Application Created"
-        config_data['appID'] = data.replace('\"','')
-        config.updateConfig(config_data)
+        conn = httplib.HTTPSConnection("api.projectoxford.ai")
+        conn.request("POST", "/luis/v1.0/prog/apps", json.dumps({
+            "Name": configData["name"],
+            "Description": configData["description"],
+            "Culture": configData["culture"]
+        }), headers)
+        data = conn.getresponse().read()
+        configData["appID"] = data.replace("\"", "")
+        config.updateConfig(configData)
         conn.close()
+        print "Application Created"
     except Exception as e:
         print e
 
+
 ###########################################
-### get the application with a given id ###
+### Get the application with a given id ###
 ###########################################
-def getApplication(appID):
+def getApplication():
     """
-        Takes appID as parameter
-        Returns the application with the ID passed in the parameter
+        Takes No Parameters
+        Returns the True if the application exists
     """
-    headers = {
-        #Request headers
-        'Ocp-Apim-Subscription-Key':config_data['subscription_key']
-    }
-
-    params = urllib.urlencode({})
-
-    body_json = json.dumps({})
-
+    print "Checking if application exists"
     try:
         conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("GET","/luis/v1.0/prog/apps/{0}?%{1}" .format(config_data["appID"], params),body_json, headers)
-
-        print "Checking if application exists..."
+        conn.request("GET", "/luis/v1.0/prog/apps/{0}".format(configData["appID"]), None, headers)
         response = conn.getresponse()
-        code = response.status
-        if code == 200:
-            return True
-        else:
-            return False
         conn.close()
+        return response.status == 200
     except Exception as e:
         print e

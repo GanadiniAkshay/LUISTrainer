@@ -1,196 +1,139 @@
-import json
-import sys
-import ast
-import os
-import httplib, urllib, base64
-
-
 import app
 import config
-import intents
 import entities
+import intents
 import phraselists
-import utterances
 import train
+import utterances
 
 if __name__ == "__main__":
-    config_data = config.getConfig()
-    
-    #create a new application if appId is None
-    if config_data["appID"] == "None":
-        app.createApp()
+    configData = config.getConfig()
 
-    #else check if the app exists and if not create it
+    if configData["appID"] == "None":
+        app.createApp()
     else:
-        application = app.getApplication(config_data['appID'])
+        application = app.getApplication()
         if application:
             print "Application Found"
         else:
             print "No application with that ID exists"
-            answer = raw_input("Create New Application? (Y/N):")
-            if answer == 'Y' or answer == 'y':
+            if raw_input("Create New Application? (Y/N):").lower() == "y":
                 app.createApp()
-                application = app.getApplication(config_data['appID'])
+                application = app.getApplication()
             else:
                 print "Cancelled"
 
     if application:
-        
         #### Handle Intents #####
 
-        #get list of existing intents of the application
-        existing_intents = intents.getExistingIntents(config_data['appID'])
-        existing_intents_set = set(existing_intents)
-        #print "Current Intents: "  + str(existing_intents)
+        # Get list of existing intents of the application
+        existingIntents = intents.getExistingIntents()
+        existingIntentsSet = set(existingIntents) if existingIntents is not None else set()
 
-        #get list of new intents 
-        new_intents = intents.getNewIntents()
-        new_intents_set = set(new_intents)
-        # print "New Intents: " + str(new_intents)
+        # Get list of new intents
+        newIntents = intents.getNewIntents()
+        newIntentsSet = set(newIntents) if newIntents is not None else set()
 
-        #get list of intents missing in config 
-        missing_intents = existing_intents_set - new_intents_set
-        for intent in missing_intents:
-            print "Intent " + intent + " is missing in your config but is present on the model."
-            answer = raw_input("Delete it? (Y/N):")
-            if answer == 'Y' or answer == 'y':
-                deleteStatus = intents.deleteIntent(existing_intents[intent])
-                if deleteStatus:
-                    print intent + " deleted"
-                else:
-                    print "There was an error"
+        # Get list of intents missing in config
+        missingIntents = existingIntentsSet - newIntentsSet
+        for intent in missingIntents:
+            print "Intent " + intent + " is missing in your config, but is present on the model"
+            if raw_input("Delete it? (Y/N):").lower() == "y":
+                if not intents.deleteIntent(existingIntents[intent]):
+                    print "There was an error trying to delete " + intent
 
-        #get list of intents to be created
-        intents_to_create = new_intents_set - existing_intents_set
-        for intent in intents_to_create:
-            createStatus = intents.createIntent(intent)
-            if createStatus:
-                print intent + " created."
-            else:
-                print "There was an error"
-
+        # Get list of intents to be created
+        intentsToCreate = newIntentsSet - existingIntentsSet
+        for intent in intentsToCreate:
+            success = intents.createIntent(intent)
+            if not success:
+                print "There was an error trying to create " + intent
 
         ### Handle entities ###
 
-        #get list of existing entities of the application
-        existing_entities = entities.getExistingEntities(config_data['appID'])
-        existing_entities_set = set(existing_entities)
-        #print "Current Entities: " + str(existing_entities)
+        # Get list of existing entities of the application
+        existingEntities = entities.getExistingEntities()
+        existingEntitiesSet = set(existingEntities) if existingEntities is not None else set()
 
-        #get list of new entities
-        new_entities = entities.getNewEntities()
-        new_entities_set = set(new_entities)
-        #print "New Entities: " + str(new_entities)
+        # Get list of new entities
+        newEntities = entities.getNewEntities()
+        newEntitiesSet = set(newEntities) if newEntities is not None else set()
 
-        #get list of entities missing in config 
-        missing_entities = existing_entities_set - new_entities_set
-        for entity in missing_entities:
-            print "Entity " + entity + " is missing in the config but is present on the model."
-            answer = raw_input("Delete it? (Y/N):")
-            if answer == 'Y' or answer == 'y':
-                deleteStatus = entities.deleteEntity(existing_entities[entity])
-                if deleteStatus:
-                    print entity + " deleted"
-                else:
-                    print "There was an error"
+        # Get list of entities missing in config
+        missingEntities = existingEntitiesSet - newEntitiesSet
+        for entity in missingEntities:
+            print "Entity " + entity + " is missing in the config, but is present on the model"
+            if raw_input("Delete it? (Y/N):").lower() == "y":
+                if not entities.deleteEntity(existingEntities[entity]):
+                    print "There was an error trying to delete " + entity
 
-        #get list of entities to be created
-        entities_to_create = new_entities_set - existing_entities_set
-        for entity in entities_to_create:
-            createStatus = entities.createEntity(entity)
-            if createStatus:
-                print entity + " created."
-            else:
-                print "There was an error"
-
+        # Get list of entities to be created
+        entitiesToCreate = newEntitiesSet - existingEntitiesSet
+        for entity in entitiesToCreate:
+            if not entities.createEntity(entity):
+                print "There was an error trying to create " + entity + " (might be a prebuilt)"
 
         ### Handle phraselists ###
 
-        #get list of existing phraselists of the application
-        existing_phraselists = phraselists.getExistingPhraselists(config_data['appID'])
-        existing_phraselists_set = set(existing_phraselists)
-        #print "Existing Phraselists: " + str(existing_phraselists)
+        # Get list of existing phraselists of the application
+        existingPhraselist = phraselists.getExistingPhraselists()
+        existingPhraselistsSet = set(existingPhraselist) if existingPhraselist is not None else set()
 
-        #get list of new phraselists
-        new_phraselists = phraselists.getNewPhraselists()
-        new_phraselists_set = set(new_phraselists)
-        #print "New Phraselists: " + str(new_phraselists)
+        # Get list of new phraselists
+        newPhraselists = phraselists.getNewPhraselists()
+        newPhraselistsSet = set(newPhraselists) if newPhraselists is not None else set()
 
-        #get list of phraselists missing in config 
-        missing_phraselists = existing_phraselists_set - new_phraselists_set
-        for phraselist in missing_phraselists:
-            print "Phraselist " + phraselist + " is missing in the config but is present on the model."
-            answer = raw_input("Delete it? (Y/N):")
-            if answer == 'Y' or answer == 'y':
-                deleteStatus = phraselists.deletePhraselist(existing_phraselists[phraselist]['Id'])
-                if deleteStatus:
-                    print phraselist + " deleted"
-                else:
-                    print "There was an error"
+        # Get list of phraselists missing in config
+        missingPhraselists = existingPhraselistsSet - newPhraselistsSet
+        for phraselist in missingPhraselists:
+            print "Phraselist " + phraselist + " is missing in the config but is present on the model"
+            if raw_input("Delete it? (Y/N):").lower() == "y":
+                if not phraselists.deletePhraselist(existingPhraselist[phraselist]["Id"]):
+                    print "There was an error trying to delete " + phraselist
 
-        #get list of phraselists to be created
-        phraselists_to_create = new_phraselists_set - existing_phraselists_set
-        for phraselist in phraselists_to_create:
-            createStatus = phraselists.createPhraselist(phraselist,new_phraselists[phraselist]['phrases'],new_phraselists[phraselist]['mode'])
-            if createStatus:
-                print phraselist + " created."
-            else:
-                print "There was an error"
+        # Get list of phraselists to be created
+        phraselistsToCreate = newPhraselistsSet - existingPhraselistsSet
+        for phraselist in phraselistsToCreate:
+            if not phraselists.createPhraselist(phraselist, newPhraselists[phraselist]["phrases"],
+                                                newPhraselists[phraselist]["mode"]):
+                print "There was an error trying to create " + phraselist
 
-        #get list of phraselists to be updated
-        phraselists_to_update = new_phraselists_set.intersection(existing_phraselists_set)
+        # Get list of phraselists to be updated
+        phraselistsToUpdate = newPhraselistsSet.intersection(existingPhraselistsSet)
         flag = 0
-        print "Checking if updates needed to phraselists..."
-        for phraselist in phraselists_to_update:
-            old_phrases = set(existing_phraselists[phraselist]['phrases'].split(","))
-            new_phrases = set(new_phraselists[phraselist]["phrases"])
-            if old_phrases != new_phrases:
-                updateStatus = phraselists.updatePhraselist(existing_phraselists[phraselist]['Id'],new_phraselists[phraselist]['phrases']
-                                                                ,new_phraselists[phraselist]['mode'],phraselist)
-                if updateStatus:
-                    print phraselist + " updated"
-                else:
-                    print "There was an error"
+        print "Checking if updates needed to phraselists"
+        for phraselist in phraselistsToUpdate:
+            oldPhrases = set(existingPhraselist[phraselist]["phrases"].split(","))
+            newPhrases = set(newPhraselists[phraselist]["phrases"])
+            if oldPhrases != newPhrases:
+                if not phraselists.updatePhraselist(existingPhraselist[phraselist]["Id"],
+                                                    newPhraselists[phraselist]["phrases"]
+                        , newPhraselists[phraselist]["mode"], phraselist):
+                    print "There was an error trying to update " + phraselist
                 flag = 1
         if flag == 0:
             print "No phraselist needs updates"
 
-
-
         ##### Handle Utterances ####
 
-        #get utterance id of existing utterances
-        utterance_ids = utterances.getUtterances()
+        # Get utterance id of existing utterances
+        utteranceIds = utterances.getUtterances()
 
-        #delete the existing utterances
-        print "Deleting existing utterances..."
-        for id in utterance_ids:
-            deleteStatus = utterances.deleteUtterance(id)
-            if deleteStatus:
+        # Delete the existing utterances
+        print "Deleting existing utterances"
+        for id in utteranceIds:
+            if utterances.deleteUtterance(id):
                 continue
             else:
-                print "There was an error"
-        print "Existing utterances deleted..."
+                print "There was an error trying to delete utterance " + id
 
-        #add new utterances
+        # Add new utterances
         print "Adding new utterances"
-        addStatus = utterances.addUtterances()
+        if not utterances.addUtterances():
+            print "There was an error trying to add new utterances"
 
-        if addStatus:
-            print "Added new utterances"
+        # Train the system
+        if train.train():
+            print "Model successfully trained"
         else:
-            print "There was an error"
-
-        #train the system
-        trainStatus = train.train()
-
-        if trainStatus:
-            print "Model Successfully trained"
-        else:
-            print "There was an error"
-
-
-
-
-
-        
+            print "There was an error training the model"
