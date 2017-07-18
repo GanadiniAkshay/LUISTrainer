@@ -134,7 +134,11 @@ if __name__ == "__main__":
             print "There was an error trying to add new utterances"
 
         # Train the system
-        if train.train():
+        trained = False
+        i = 0
+        while trained is False and ++i < 5:
+            trained = train.train()
             print "Model successfully trained"
-        else:
-            print "There was an error training the model"
+
+        if trained is False and i == 5:
+            print "Model failed to be trained"
