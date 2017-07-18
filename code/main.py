@@ -37,10 +37,11 @@ if __name__ == "__main__":
         # Get list of intents missing in config
         missingIntents = existingIntentsSet - newIntentsSet
         for intent in missingIntents:
-            print "Intent " + intent + " is missing in your config, but is present on the model"
-            if raw_input("Delete it? (Y/N):").lower() == "y":
-                if not intents.deleteIntent(existingIntents[intent]):
-                    print "There was an error trying to delete " + intent
+            if intent != "None":
+                print "Intent " + intent + " is missing in your config, but is present on the model"
+                if raw_input("Delete it? (Y/N):").lower() == "y":
+                    if not intents.deleteIntent(existingIntents[intent]):
+                        print "There was an error trying to delete " + intent
 
         # Get list of intents to be created
         intentsToCreate = newIntentsSet - existingIntentsSet
