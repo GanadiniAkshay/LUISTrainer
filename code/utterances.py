@@ -60,12 +60,13 @@ def addUtterances():
         Reads all the intent texts and creates the utterances and adds it to the application
     """
     configEntites = [entity["name"] for entity in configData["entities"]]
-    utterances = []
     basePath = "../intents/"
+    result = True
     for subdirs, dirs, files in os.walk(basePath):
         for file in files:
             filepath = os.path.join(subdirs, file)
-            if filepath.endswith(".txt"):
+            if result and filepath.endswith(".txt"):
+                utterances = []
                 intent = os.path.splitext(file)[0]
                 print "Adding utterances for " + intent
                 with open(filepath, "r") as intentFile:
@@ -114,12 +115,15 @@ def addUtterances():
                             utterances.append({"ExampleText": exampleText.replace("(", "").replace(")", ""),
                                                "SelectedIntentName": intent, "EntityLabels": entityLabels})
 
-    try:
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("POST", "/luis/v1.0/prog/apps/{0}/examples".format(configData["appID"]), json.dumps(utterances),
-                     headers)
-        response = conn.getresponse()
-        conn.close()
-        return response.status == 201
-    except Exception as e:
-        print e
+                if len(utterances) > 0:
+                    try:
+                        conn = httplib.HTTPSConnection("api.projectoxford.ai")
+                        conn.request("POST", "/luis/v1.0/prog/apps/{0}/examples".format(configData["appID"]), json.dumps(utterances),
+                                     headers)
+                        response = conn.getresponse()
+                        conn.close()
+                        result = response.status == 201
+                    except Exception as e:
+                        print e
+                        result = False
+    return result
