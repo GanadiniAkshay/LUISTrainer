@@ -1,12 +1,11 @@
+import httplib
 import json
-import sys
-import ast
 import os
-import httplib, urllib, base64
 
 import config
 
-config_data = config.getConfig()
+configData = config.getConfig()
+headers = {"Ocp-Apim-Subscription-Key": configData["subscription_key"], "Content-Type": "application/json"}
 
 
 ##################################
@@ -17,35 +16,18 @@ def getUtterances():
         Takes no parameters
         Gets all the utterances for a given app
     """
-    utterance_ids = []
-    headers = {
-        #Request headers
-        'Ocp-Apim-Subscription-Key':config_data['subscription_key']
-    }
-
-    params = urllib.urlencode({})
-
-    body_json = json.dumps({})
-
     try:
+        utteranceIds = None
         conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("GET","/luis/v1.0/prog/apps/{0}/examples?skip=0&count=100000000000%{1}" .format(config_data["appID"],params),body_json, headers)
-
-        print "Getting list of utterances..."
+        conn.request("GET",
+                     "/luis/v1.0/prog/apps/{0}/examples?skip=0&count=100000000000".format(configData["appID"]), None,
+                     headers)
         response = conn.getresponse()
-        code = response.status
-        if code == 200:
-            data = response.read()
-            data = data.replace('true','1')
-            data = data.replace('false','0')
-            data = data.replace('null','-1')
-            utterances = ast.literal_eval(data)
-            for utterance in utterances:
-                utterance_ids.append(utterance['exampleId'])
-            return utterance_ids
-        else:
-            return None
+        if response.status == 200:
+            utterances = json.loads(response.read())
+            utteranceIds = [utterance["exampleId"] for utterance in utterances]
         conn.close()
+        return utteranceIds
     except Exception as e:
         print e
 
@@ -55,32 +37,18 @@ def getUtterances():
 ####################################
 def deleteUtterance(id):
     """
-        Takes exampleID as input
+        Takes id as parameter
         Delete the utterances with given id
     """
-    headers = {
-        #Request headers
-        'Ocp-Apim-Subscription-Key':config_data['subscription_key']
-    }
-
-    params = urllib.urlencode({})
-
-    body_json = json.dumps({})
-
     try:
         conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("DELETE","/luis/v1.0/prog/apps/{0}/examples/{1}?%{2}" .format(config_data["appID"],id,params),body_json, headers)
-
+        conn.request("DELETE", "/luis/v1.0/prog/apps/{0}/examples/{1}".format(configData["appID"], id),
+                     None, headers)
         response = conn.getresponse()
-        code = response.status
-        if code == 200:
-            return True
-        else:
-            return False
         conn.close()
+        return response.status == 200
     except Exception as e:
         print e
-
 
 
 ########################
@@ -91,99 +59,71 @@ def addUtterances():
         Takes no parameter
         Reads all the intent texts and creates the utterances and adds it to the application
     """
-    print "Getting list of new utterances..."
-
-    #get list of entities from config
-    config_entites = []
-    for entity in config_data["entities"]:
-        config_entites.append(entity["name"])
-    
-    utterances = []
-
+    configEntites = [entity["name"] for entity in configData["entities"]]
     basePath = "../intents/"
+    result = True
     for subdirs, dirs, files in os.walk(basePath):
         for file in files:
             filepath = os.path.join(subdirs, file)
-            if filepath.endswith(".txt"):
-                intent = os.path.splitext(filepath)[0]
-                print "Adding examples for intent " + intent
-                with open(filepath,'r') as intentFile:
+            if result and filepath.endswith(".txt"):
+                utterances = []
+                intent = os.path.splitext(file)[0]
+                print "Adding utterances for " + intent
+                with open(filepath, "r") as intentFile:
                     for example in intentFile:
-                        utterance = {}
                         entityLabels = []
 
-                        #check if example has entities
-                        example_split = example.split("<=>")
+                        # Check if example has entities
+                        exampleSplit = example.strip().split("<=>")
+                        exampleText = exampleSplit[0].strip()
 
-                        example_text = example_split[0]
-            
-                        if len(example_split) > 1:
-                            example_entities = example_split[1:]
+                        if len(exampleSplit) > 1:
+                            exampleEntities = exampleSplit[1:]
 
                             # check if entities mentioned in text exist in config
-                            for example_entity in example_entities:
-                                if not example_entity.strip() in config_entites:
-                                    print "The entity " + example_entity + " used in " + example_text + " is not present in config."
+                            for exampleEntity in exampleEntities:
+                                if not exampleEntity.strip() in configEntites:
+                                    print "The entity " + exampleEntity + " used in " + exampleText + " is not present in config"
                                     return None
 
-                            # check if parantheses match
-                            open_paran_count = example_text.count('(')
-                            close_paran_count = example_text.count(')')
+                            # Check if parantheses match
+                            openParanCount = exampleText.count("(")
+                            closeParanCount = exampleText.count(")")
 
-                            if open_paran_count != close_paran_count:
-                                print "Paranthesis don't match for " + example_text
-                                return None
-                            
-                            #check if paranthesis and provide entities match
-                            if open_paran_count != len(example_entities):
-                                print "The entities provided and the words marked in paranthesis don't match for " + example_text
+                            if openParanCount != closeParanCount:
+                                print "Paranthesis don't match for " + exampleText
                                 return None
 
-                            start_pos = 0
-                            entities_count = 0
-                            no_of_entities = len(example_entities)
+                            # Check if paranthesis and provide entities match
+                            if openParanCount != len(exampleEntities):
+                                print "The entities provided and the words marked in paranthesis don't match for " + exampleText
+                                return None
 
-                            while entities_count<no_of_entities:
-                                start_pos = example_text.find('(',start_pos,len(example_text))+1
-                                end_pos   = example_text.find(')',start_pos,len(example_text))-1
+                            startPos = 0
+                            entitiesCount = 0
+                            noOfEntities = len(exampleEntities)
 
-                                entityLabel = {}
-
-                                entityLabel["EntityType"] = example_entities[entities_count].strip()
-                                entityLabel["StartToken"] = start_pos - ((entities_count * 2 ) + 1)
-                                entityLabel["EndToken"]   = end_pos - ((entities_count *2 ) + 1)
-
-                                entities_count += 1
-
+                            while entitiesCount < noOfEntities:
+                                startPos = exampleText.find("(", startPos, len(exampleText)) + 1
+                                endPos = exampleText.find(")", startPos, len(exampleText)) - 1
+                                entityLabel = {"EntityType": exampleEntities[entitiesCount].strip(),
+                                               "StartToken": startPos - ((entitiesCount * 2) + 1),
+                                               "EndToken": endPos - ((entitiesCount * 2) + 1)}
+                                entitiesCount += 1
                                 entityLabels.append(entityLabel)
- 
-                        
-                        utterance["ExampleText"] = example_text.replace('(','').replace(')','')
-                        utterance["SelectedIntentName"] = intent
-                        utterance["EntityLabels"] = entityLabels
 
-                        utterances.append(utterance)
-    headers = {
-        #Request headers
-        'Content-Type': 'application/json',
-        'Ocp-Apim-Subscription-Key':config_data['subscription_key']
-    }
+                            utterances.append({"ExampleText": exampleText.replace("(", "").replace(")", ""),
+                                               "SelectedIntentName": intent, "EntityLabels": entityLabels})
 
-    params = urllib.urlencode({})
-
-    body_json = json.dumps(utterances)
-
-    try:
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("POST","/luis/v1.0/prog/apps/{0}/examples?%{1}" .format(config_data["appID"],params),body_json, headers)
-
-        response = conn.getresponse()
-        code = response.status
-        if code == 201:
-            return True
-        else:
-            return False
-        conn.close()
-    except Exception as e:
-        print e
-
+                if len(utterances) > 0:
+                    try:
+                        conn = httplib.HTTPSConnection("api.projectoxford.ai")
+                        conn.request("POST", "/luis/v1.0/prog/apps/{0}/examples".format(configData["appID"]), json.dumps(utterances),
+                                     headers)
+                        response = conn.getresponse()
+                        conn.close()
+                        result = response.status == 201
+                    except Exception as e:
+                        print e
+                        result = False
+    return result

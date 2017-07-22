@@ -1,7 +1,5 @@
 import json
-import sys
-import ast
-import os
+
 
 #####################################################
 ### load the config file into a dictionary object ###
@@ -11,20 +9,21 @@ def getConfig():
         Takes No Parameters
         Loads the config.json file into a json object and returns it
     """
-    with open('../config.json') as config_file:
-        config_data = json.load(config_file)
+    with open('../config.json') as config:
+        data = json.load(config)
 
-    return config_data
+    return data
+
 
 #############################
 ### update the cofig file ###
 #############################
-def updateConfig(config_data):
+def updateConfig(data):
     """
-        Takes No Parameter
-        Updates the config file with the app ID
+        Takes data to write to config.json
+        Updates the config file
     """
-    print "Updating Config File..."
-    with open('../config.json','w') as config_file:
-        json.dump(config_data,config_file)
+    print "Updating Config File"
+    with open('../config.json', 'w') as config:
+        json.dump(data, config)
     print "Updated Config File"

@@ -1,124 +1,85 @@
+import httplib
 import json
-import sys
-import ast
 import os
-import httplib, urllib, base64
 
 import config
 
-config_data = config.getConfig()
+configData = config.getConfig()
+headers = {"Ocp-Apim-Subscription-Key": configData["subscription_key"], "Content-Type": "application/json"}
+
 
 ###########################################################
-### get the current list of intents for the application ###
+### Get the current list of intents for the application ###
 ###########################################################
-def getExistingIntents(appID):
+def getExistingIntents():
     """
-        Takes appID as a parameter
+        Takes No Parameters
         Returns the current Intents on the Application on the server
     """
-    headers = {
-        #Request headers
-        'Ocp-Apim-Subscription-Key':config_data['subscription_key']
-    }
-
-    params = urllib.urlencode({})
-
-    body_json = json.dumps({})
-
+    print "Getting list of existing intents"
     try:
+        currentIntents = None
         conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("GET","/luis/v1.0/prog/apps/{0}/intents?%{1}" .format(config_data["appID"], params),body_json, headers)
-
-        print "Getting list of existing intents..."
+        conn.request("GET", "/luis/v1.0/prog/apps/{0}/intents".format(configData["appID"]), None, headers)
         response = conn.getresponse()
-        code = response.status
-        if code == 200:
-            current_intents = {}
-            data = response.read()
-            intents = ast.literal_eval(data)
-            for intent in intents:
-                current_intents[intent['name']] = intent['id']
-            return current_intents
-        else:
-            return None
+        if response.status == 200:
+            intents = json.loads(response.read())
+            currentIntents = {item.get("name"): item.get("id") for item in intents.get("Result")}
         conn.close()
+        return currentIntents
     except Exception as e:
         print e
 
+
 ###############################
-### get list of new intents ###
+### Get list of new intents ###
 ###############################
 def getNewIntents():
     """
         Takes No Parameters
         Returns the list of intents in the config
     """
+    print "Getting list of new intents"
     basePath = "../intents/"
-    print "Getting list of new intents..."
-    new_intents = [os.path.splitext(f)[0] for f in os.listdir(basePath) if os.path.isfile(os.path.join(basePath, f)) and f.endswith(".txt")]
-    return new_intents
+    return [os.path.splitext(f)[0] for f in os.listdir(basePath) if
+            os.path.isfile(os.path.join(basePath, f)) and f.endswith(".txt")]
+
 
 #######################################
-### delete the intent with given id ###
+### Delete the intent with given id ###
 #######################################
-def deleteIntent(intentID):
+def deleteIntent(id):
     """
-        Takes intentID as parameter
-        Deletes the intent classifier with the intentID passed as parameter
+        Takes id as parameter
+        Deletes the intent classifier with the id passed as parameter
     """
-    headers = {
-        # Request headers
-        'Ocp-Apim-Subscription-Key':config_data['subscription_key']
-    }
-
-    params = urllib.urlencode({})
-
-    body_json = json.dumps({})
-
-    print "Deleting Intent..."
-
+    print "Deleting Intent"
     try:
-        conn = httplib.HTTPSConnection('api.projectoxford.ai')
-        conn.request("DELETE","/luis/v1.0/prog/apps/{0}/intents/{1}?{2}" .format(config_data["appID"], intentID, params),body_json, headers)
+        conn = httplib.HTTPSConnection("api.projectoxford.ai")
+        conn.request("DELETE", "/luis/v1.0/prog/apps/{0}/intents/{1}".format(configData["appID"], id), None,
+                     headers)
         response = conn.getresponse()
-        code = response.status
-        if code == 200:
-            return True
-        else:
-            return False
+        conn.close()
+        return response.status == 200
     except Exception as e:
         print e
 
+
 ######################################
-### create a new intent classifier ###
+### Create a new intent classifier ###
 ######################################
 def createIntent(intent):
     """
-        Takes the intent name as parameter
+        Takes intent as parameter
         Creates a new Intent Classifier with the given Intent Name
     """
-    headers = {
-        # Request headers
-        'Ocp-Apim-Subscription-Key':config_data['subscription_key']
-    }
-
-    params = urllib.urlencode({})
-
-    body = {}
-    body["Name"] = intent
-
-    body_json = json.dumps(body)
-
-    print "Creating Intent Classifier for " + intent + "..."
-
+    print "Creating Intent Classifier for " + intent + ""
     try:
-        conn = httplib.HTTPSConnection('api.projectoxford.ai')
-        conn.request("POST","/luis/v1.0/prog/apps/{0}/intents?%{1}" .format(config_data["appID"], params),body_json, headers)
+        conn = httplib.HTTPSConnection("api.projectoxford.ai")
+        conn.request("POST", "/luis/v1.0/prog/apps/{0}/intents".format(configData["appID"]),
+                     json.dumps({"Name": intent}), headers)
         response = conn.getresponse()
-        code = response.status
-        if code == 201:
-            return True
-        else:
-            return False
+        conn.close()
+        return response.status == 201
     except Exception as e:
         print e
