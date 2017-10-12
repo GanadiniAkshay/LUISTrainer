@@ -18,14 +18,14 @@ def getUtterances():
     """
     try:
         utteranceIds = None
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
         conn.request("GET",
-                     "/luis/v1.0/prog/apps/{0}/examples?skip=0&count=100000000000".format(configData["appID"]), None,
-                     headers)
+                     "/luis/api/v2.0/apps/{0}/versions/{1}/examples?skip=0&count=100000000000".format(
+                         configData["appID"], configData["activeVersion"]), None, headers)
         response = conn.getresponse()
         if response.status == 200:
             utterances = json.loads(response.read())
-            utteranceIds = [utterance["exampleId"] for utterance in utterances]
+            utteranceIds = [utterance["id"] for utterance in utterances]
         conn.close()
         return utteranceIds
     except Exception as e:
@@ -41,8 +41,10 @@ def deleteUtterance(id):
         Delete the utterances with given id
     """
     try:
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("DELETE", "/luis/v1.0/prog/apps/{0}/examples/{1}".format(configData["appID"], id),
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
+        conn.request("DELETE", "/luis/api/v2.0/apps/{0}/versions/{1}/examples/{2}".format(configData["appID"],
+                                                                                          configData["activeVersion"],
+                                                                                          id),
                      None, headers)
         response = conn.getresponse()
         conn.close()
@@ -106,20 +108,20 @@ def addUtterances():
                             while entitiesCount < noOfEntities:
                                 startPos = exampleText.find("(", startPos, len(exampleText)) + 1
                                 endPos = exampleText.find(")", startPos, len(exampleText)) - 1
-                                entityLabel = {"EntityType": exampleEntities[entitiesCount].strip(),
-                                               "StartToken": startPos - ((entitiesCount * 2) + 1),
-                                               "EndToken": endPos - ((entitiesCount * 2) + 1)}
+                                entityLabel = {"EntityName": exampleEntities[entitiesCount].strip(),
+                                               "StartCharIndex": startPos - ((entitiesCount * 2) + 1),
+                                               "endCharIndex": endPos - ((entitiesCount * 2) + 1)}
                                 entitiesCount += 1
                                 entityLabels.append(entityLabel)
 
-                            utterances.append({"ExampleText": exampleText.replace("(", "").replace(")", ""),
-                                               "SelectedIntentName": intent, "EntityLabels": entityLabels})
+                            utterances.append({"Text": exampleText.replace("(", "").replace(")", ""),
+                                               "IntentName": intent, "EntityLabels": entityLabels})
 
                 if len(utterances) > 0:
                     try:
-                        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-                        conn.request("POST", "/luis/v1.0/prog/apps/{0}/examples".format(configData["appID"]), json.dumps(utterances),
-                                     headers)
+                        conn = httplib.HTTPSConnection(configData["luisUrl"])
+                        conn.request("POST", "/luis/api/v2.0/apps/{0}/versions/{1}/examples".format(
+                            configData["appID"], configData["activeVersion"]), json.dumps(utterances), headers)
                         response = conn.getresponse()
                         conn.close()
                         result = response.status == 201

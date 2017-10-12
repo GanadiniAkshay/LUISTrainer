@@ -16,8 +16,9 @@ def train():
     """
     print "Training the LUIS Model"
     try:
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("POST", "/luis/v1.0/prog/apps/{0}/train".format(configData["appID"]), None,
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
+        conn.request("POST", "/luis/api/v2.0/apps/{0}/versions/{1}/train".format(configData["appID"],
+                                                                                 configData["activeVersion"]), None,
                      headers)
         response = conn.getresponse()
         conn.close()

@@ -1,4 +1,5 @@
 {
+ "luisUrl": "westus.api.cognitive.microsoft.com",
  "culture": "en-us", 
  "subscription_key": "YOUR_SUBSCRIPTION_KEY",
  "description": "YOUR_APP_DESCRIPTION", 

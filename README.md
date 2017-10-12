@@ -8,7 +8,7 @@ Instead you can use this framework which uses the LUIS API to train your models 
 
 #### Usage
 1. Setup Config
-   * Add your subscription_key in config.json (subscription key for LUIS. You can find your's [here] (https://www.luis.ai/Home/UserSettings)
+   * Add your subscription_key in config.json (Programmatic key for LUIS. You can find your's [here] (https://www.luis.ai/user/settings)
    * Add your App Name, App Description and appID. (LUIS app name and appId)  
      If it's a new app and you don't have an id, put appId as **None**
 

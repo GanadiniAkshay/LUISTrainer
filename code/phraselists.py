@@ -18,8 +18,8 @@ def getExistingPhraselists():
     try:
         print "Getting list of existing phraselists"
         currentPhraselists = None
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("GET", "/luis/v1.0/prog/apps/{0}/phraselists".format(configData["appID"]), None,
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
+        conn.request("GET", "/luis/api/v2.0/apps/{0}/versions/{1}/phraselists".format(configData["appID"], configData["activeVersion"]), None,
                      headers)
         response = conn.getresponse()
         if response.status == 200:
@@ -55,9 +55,9 @@ def deletePhraselist(id):
     """
     print "Deleting Phraselist"
     try:
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
         conn.request("DELETE",
-                     "/luis/v1.0/prog/apps/{0}/phraselists/{1}?{2}".format(configData["appID"], id),
+                     "/luis/api/v2.0/apps/{0}/versions/{1}/phraselists/{2}".format(configData["appID"], configData["activeVersion"], id),
                      None, headers)
         response = conn.getresponse()
         conn.close()
@@ -76,9 +76,9 @@ def createPhraselist(name, phrases, mode):
     """
     print "Creating Phraselist for " + name + ""
     try:
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("POST", "/luis/v1.0/prog/apps/{0}/phraselists".format(configData["appID"]),
-                     json.dumps({"Name": name, "Mode": mode, "Phrases": ",".join(phrases)}), headers)
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
+        conn.request("POST", "/luis/api/v2.0/apps/{0}/versions/{1}/phraselists".format(configData["appID"], configData["activeVersion"]),
+                     json.dumps({"Name": name, "IsExchangeable": mode, "Phrases": ",".join(phrases)}), headers)
         response = conn.getresponse()
         conn.close()
         return response.status == 201
@@ -96,10 +96,10 @@ def updatePhraselist(id, phrases, mode, name):
     """
     print "Updating " + name + ""
     try:
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
         conn.request("PUT",
-                     "/luis/v1.0/prog/apps/{0}/phraselists/{1}".format(configData["appID"], id),
-                     json.dumps({"Name": name, "Mode": mode, "Phrases": ",".join(phrases), "IsActive": True}), headers)
+                     "/luis/api/v2.0/apps/{0}/versions/{1}/phraselists/{2}".format(configData["appID"], configData["activeVersion"], id),
+                     json.dumps({"Name": name, "IsExchangeable": mode, "Phrases": ",".join(phrases), "IsActive": True}), headers)
         response = conn.getresponse()
         conn.close()
         return response.status == 200
