@@ -19,12 +19,12 @@ def getExistingEntities():
     print "Getting list of existing entities"
     try:
         currentEntities = None
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("GET", "/luis/v1.0/prog/apps/{0}/entities".format(configData["appID"]), None, headers)
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
+        conn.request("GET", "/luis/api/v2.0/apps/{0}/versions/{1}/entities".format(configData["appID"], configData["activeVersion"]), None, headers)
         response = conn.getresponse()
         if response.status == 200:
             entities = json.loads(response.read())
-            currentEntities = {item.get("name"): item.get("id") for item in entities.get("Result")}
+            currentEntities = {item.get("name"): item.get("id") for item in entities}
         conn.close()
         return currentEntities
     except Exception as e:
@@ -52,9 +52,10 @@ def deleteEntity(id):
         Deletes the entity classifier with the id passed as parameter
     """
     try:
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
         conn.request("DELETE",
-                     "/luis/v1.0/prog/apps/{0}/entities/{1}".format(configData["appID"], id),
+                     "/luis/api/v2.0/apps/{0}/versions/{1}/entities/{2}".format(configData["appID"],
+                                                                                configData["activeVersion"], id),
                      None, headers)
         response = conn.getresponse()
         conn.close()
@@ -73,8 +74,9 @@ def createEntity(entity):
     """
     try:
 
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("POST", "/luis/v1.0/prog/apps/{0}/entities".format(configData["appID"]),
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
+        conn.request("POST", "/luis/api/v2.0/apps/{0}/versions/{1}/entities".format(configData["appID"],
+                                                                                    configData["activeVersion"]),
                      json.dumps({"Name": entity}),
                      headersWrite)
         response = conn.getresponse()

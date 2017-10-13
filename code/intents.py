@@ -19,16 +19,17 @@ def getExistingIntents():
     print "Getting list of existing intents"
     try:
         currentIntents = None
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("GET", "/luis/v1.0/prog/apps/{0}/intents".format(configData["appID"]), None, headers)
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
+        conn.request("GET", "/luis/api/v2.0/apps/{0}/versions/{1}/intents".format(configData["appID"], configData["activeVersion"]), None, headers)
         response = conn.getresponse()
         if response.status == 200:
             intents = json.loads(response.read())
-            currentIntents = {item.get("name"): item.get("id") for item in intents.get("Result")}
+            currentIntents = {item.get("name"): item.get("id") for item in intents}
         conn.close()
         return currentIntents
     except Exception as e:
         print e
+        raise
 
 
 ###############################
@@ -55,8 +56,8 @@ def deleteIntent(id):
     """
     print "Deleting Intent"
     try:
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("DELETE", "/luis/v1.0/prog/apps/{0}/intents/{1}".format(configData["appID"], id), None,
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
+        conn.request("DELETE", "/luis/api/v2.0/apps/{0}/versions/{1}/intents/{2}".format(configData["appID"], configData["activeVersion"], id), None,
                      headers)
         response = conn.getresponse()
         conn.close()
@@ -75,8 +76,8 @@ def createIntent(intent):
     """
     print "Creating Intent Classifier for " + intent + ""
     try:
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("POST", "/luis/v1.0/prog/apps/{0}/intents".format(configData["appID"]),
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
+        conn.request("POST", "/luis/api/v2.0/apps/{0}/versions/{1}/intents".format(configData["appID"], configData["activeVersion"]),
                      json.dumps({"Name": intent}), headers)
         response = conn.getresponse()
         conn.close()

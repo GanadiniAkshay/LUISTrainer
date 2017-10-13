@@ -17,8 +17,8 @@ def createApp():
     """
     print "Creating Application"
     try:
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("POST", "/luis/v1.0/prog/apps", json.dumps({
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
+        conn.request("POST", "/luis/api/v2.0/apps", json.dumps({
             "Name": configData["name"],
             "Description": configData["description"],
             "Culture": configData["culture"]
@@ -42,9 +42,13 @@ def getApplication():
     """
     print "Checking if application exists"
     try:
-        conn = httplib.HTTPSConnection("api.projectoxford.ai")
-        conn.request("GET", "/luis/v1.0/prog/apps/{0}".format(configData["appID"]), None, headers)
+        conn = httplib.HTTPSConnection(configData["luisUrl"])
+        conn.request("GET", "/luis/api/v2.0/apps/{0}".format(configData["appID"]), None, headers)
         response = conn.getresponse()
+        if response.status == 200:
+            data = json.loads(response.read())
+            configData["activeVersion"] = data["activeVersion"]
+            config.updateConfig(configData)
         conn.close()
         return response.status == 200
     except Exception as e:
