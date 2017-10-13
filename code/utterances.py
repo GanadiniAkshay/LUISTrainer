@@ -3,6 +3,7 @@ import json
 import os
 
 import config
+import utils
 
 configData = config.getConfig()
 headers = {"Ocp-Apim-Subscription-Key": configData["subscription_key"], "Content-Type": "application/json"}
@@ -118,14 +119,17 @@ def addUtterances():
                                                "IntentName": intent, "EntityLabels": entityLabels})
 
                 if len(utterances) > 0:
-                    try:
-                        conn = httplib.HTTPSConnection(configData["luisUrl"])
-                        conn.request("POST", "/luis/api/v2.0/apps/{0}/versions/{1}/examples".format(
-                            configData["appID"], configData["activeVersion"]), json.dumps(utterances), headers)
-                        response = conn.getresponse()
-                        conn.close()
-                        result = response.status == 201
-                    except Exception as e:
-                        print e
-                        result = False
+                    result = True
+                    for utters in utils.grouper(utterances, 100):
+                        utters = [a for a in utters if a is not None]  # drop trailing Nones.
+                        try:
+                            conn = httplib.HTTPSConnection(configData["luisUrl"])
+                            conn.request("POST", "/luis/api/v2.0/apps/{0}/versions/{1}/examples".format(
+                                configData["appID"], configData["activeVersion"]), json.dumps(utters), headers)
+                            response = conn.getresponse()
+                            conn.close()
+                            result = response.status == 201 and result
+                        except Exception as e:
+                            print e
+                            result = False
     return result
