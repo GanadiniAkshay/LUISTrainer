@@ -117,6 +117,8 @@ def addUtterances():
 
                             utterances.append({"Text": exampleText.replace("(", "").replace(")", ""),
                                                "IntentName": intent, "EntityLabels": entityLabels})
+                        elif file != 'None.txt':
+                            utterances.append({"Text": exampleText, "IntentName": intent, "EntityLabels": []})
 
                 if len(utterances) > 0:
                     result = True
